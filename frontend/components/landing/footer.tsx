@@ -35,12 +35,6 @@ export function Footer() {
               Features
             </Link>
             <Link
-              href="/dashboard"
-              className="text-sm text-white/60 hover:text-white transition-colors"
-            >
-              Dashboard
-            </Link>
-            <Link
               href="/admin"
               className="text-sm text-white/60 hover:text-white transition-colors"
             >

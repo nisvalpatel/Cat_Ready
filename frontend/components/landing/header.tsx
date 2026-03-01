@@ -42,12 +42,6 @@ export function Header() {
               Features
             </Link>
             <Link
-              href="/dashboard"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Dashboard
-            </Link>
-            <Link
               href="/admin"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
@@ -92,13 +86,6 @@ export function Header() {
                 onClick={() => setMenuOpen(false)}
               >
                 Features
-              </Link>
-              <Link
-                href="/dashboard"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                onClick={() => setMenuOpen(false)}
-              >
-                Dashboard
               </Link>
               <Link
                 href="/admin"
