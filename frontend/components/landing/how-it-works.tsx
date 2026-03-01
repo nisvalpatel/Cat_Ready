@@ -30,44 +30,60 @@ function StepItem({ step, index, scrollYProgress }: {
   index: number;
   scrollYProgress: ReturnType<typeof useScroll>["scrollYProgress"];
 }) {
-  // Calculate the scroll range for this specific step
-  const stepStart = 0.1 + (index * 0.25);
-  const stepMid = stepStart + 0.12;
-  const stepEnd = stepStart + 0.22;
+  // Extended scroll ranges for smoother, overlapping transitions
+  const stepStart = 0.08 + (index * 0.22);
+  const stepFadeIn = stepStart + 0.08;
+  const stepActive = stepStart + 0.14;
+  const stepFadeOut = stepStart + 0.26;
+  const stepEnd = stepStart + 0.32;
 
-  // Step becomes active - text goes from gray to black
+  // Smoother text opacity with overlap - inactive is more visible (0.5)
   const textOpacity = useTransform(
     scrollYProgress,
-    [stepStart, stepMid, stepEnd, stepEnd + 0.1],
-    [0.3, 1, 1, 0.3]
+    [stepStart, stepFadeIn, stepActive, stepFadeOut, stepEnd],
+    [0.5, 0.85, 1, 0.85, 0.5]
   );
 
-  // Icon container goes from gray to YELLOW when active
+  // Icon container - smoother yellow transition with crossfade
   const iconBgOpacity = useTransform(
     scrollYProgress,
-    [stepStart, stepMid, stepEnd, stepEnd + 0.1],
-    [0, 1, 1, 0]
+    [stepStart, stepFadeIn, stepActive, stepFadeOut, stepEnd],
+    [0, 0.6, 1, 0.6, 0]
   );
 
-  // Y transform for subtle rise effect
+  // Y transform - gentler rise over longer distance
   const y = useTransform(
     scrollYProgress,
-    [stepStart, stepMid],
-    [15, 0]
+    [stepStart, stepActive, stepEnd],
+    [10, 0, 10]
   );
 
-  // Scale for the icon container
+  // Scale for the icon - subtle breathing effect
   const iconScale = useTransform(
     scrollYProgress,
-    [stepStart, stepMid, stepEnd, stepEnd + 0.1],
-    [0.95, 1.05, 1.05, 0.95]
+    [stepStart, stepFadeIn, stepActive, stepFadeOut, stepEnd],
+    [0.98, 1.02, 1.06, 1.02, 0.98]
   );
 
-  // Number fades in when active
+  // Number - softer fade with extended range
   const numberOpacity = useTransform(
     scrollYProgress,
-    [stepStart, stepMid, stepEnd, stepEnd + 0.1],
-    [0.05, 0.15, 0.15, 0.05]
+    [stepStart, stepFadeIn, stepActive, stepFadeOut, stepEnd],
+    [0.04, 0.1, 0.15, 0.1, 0.04]
+  );
+
+  // Title opacity - slightly delayed from icon for stagger effect
+  const titleOpacity = useTransform(
+    scrollYProgress,
+    [stepStart + 0.02, stepFadeIn + 0.02, stepActive, stepFadeOut - 0.02, stepEnd - 0.02],
+    [0.5, 0.85, 1, 0.85, 0.5]
+  );
+
+  // Description opacity - more delayed for cascading effect
+  const descOpacity = useTransform(
+    scrollYProgress,
+    [stepStart + 0.04, stepFadeIn + 0.04, stepActive, stepFadeOut - 0.04, stepEnd - 0.04],
+    [0.5, 0.85, 1, 0.85, 0.5]
   );
 
   return (
@@ -115,18 +131,18 @@ function StepItem({ step, index, scrollYProgress }: {
             </motion.div>
           </div>
 
-          {/* Title */}
+          {/* Title - slightly delayed for stagger */}
           <motion.h3 
-            className="text-2xl sm:text-3xl font-black text-cat-black mb-4"
-            style={{ opacity: textOpacity }}
+            className="text-2xl sm:text-3xl font-black text-cat-black mb-4 transition-opacity duration-300 ease-out"
+            style={{ opacity: titleOpacity }}
           >
             {step.title}
           </motion.h3>
 
-          {/* Description */}
+          {/* Description - more delayed for cascade */}
           <motion.p 
-            className="text-lg text-muted-foreground leading-relaxed"
-            style={{ opacity: textOpacity }}
+            className="text-lg text-muted-foreground leading-relaxed transition-opacity duration-300 ease-out"
+            style={{ opacity: descOpacity }}
           >
             {step.description}
           </motion.p>

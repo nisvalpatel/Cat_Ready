@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { MachineSelection } from "@/components/inspect/machine-selection";
-import { InspectionCapture, type PhotosByCategory } from "@/components/inspect/inspection-capture";
+import { StartInspection } from "@/components/inspect/start-inspection";
+import { InspectionCapture, type PhotosByStep, type AudioByStep } from "@/components/inspect/inspection-capture";
 import { InspectionResults } from "@/components/inspect/inspection-results";
-import { machines, Machine, inspectionCategories } from "@/lib/mock-data";
+import { VEHICLE, CHECKLIST_STEPS } from "@/lib/checklist";
 import {
   createInspection,
   getInspection,
@@ -14,39 +14,45 @@ import {
 } from "@/lib/api";
 import type { InspectionResult } from "@/lib/mock-data";
 
-type Step = "select" | "capture" | "processing" | "results" | "error";
+type Step = "start" | "capture" | "processing" | "results" | "error";
+
+const MACHINE_FOR_RESULTS = {
+  id: VEHICLE.id,
+  name: VEHICLE.name,
+  type: "loader" as const,
+  model: VEHICLE.model,
+  lastInspection: "",
+  status: "pending" as const,
+  location: "",
+  hours: 0,
+};
 
 export default function InspectPage() {
-  const [step, setStep] = useState<Step>("select");
-  const [selectedMachine, setSelectedMachine] = useState<Machine | null>(null);
+  const [step, setStep] = useState<Step>("start");
   const [inspectionResult, setInspectionResult] = useState<InspectionResult | null>(null);
   const [inspectionId, setInspectionId] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleMachineSelect = (machine: Machine) => {
-    setSelectedMachine(machine);
-    setStep("capture");
-  };
+  const handleStart = () => setStep("capture");
 
-  const handleCaptureComplete = async (photosByCategory: PhotosByCategory, audioBlob: Blob | null) => {
-    if (!selectedMachine) return;
+  const handleCaptureComplete = async (photosByStep: PhotosByStep, audioByStep: AudioByStep) => {
     setStep("processing");
     setErrorMessage(null);
 
     try {
-      const { id: inspectionId } = await createInspection(selectedMachine.id);
+      const { id: inspId } = await createInspection(VEHICLE.id);
 
-      for (let i = 0; i < inspectionCategories.length; i++) {
-        const category = inspectionCategories[i];
-        const images = photosByCategory[category.id] || [];
-        const audio = i === 0 ? audioBlob : null;
-        await submitStep(inspectionId, i, category.name, audio, images);
+      for (let i = 0; i < CHECKLIST_STEPS.length; i++) {
+        const checklistStep = CHECKLIST_STEPS[i];
+        const images = photosByStep[checklistStep.id] || [];
+        const audio = audioByStep[i] ?? null;
+        await submitStep(inspId, i, checklistStep.name, audio, images);
       }
 
-      const inspection: InspectionDetail = await getInspection(inspectionId);
-      const result = inspectionToResult(inspection, selectedMachine.id);
+      const inspection: InspectionDetail = await getInspection(inspId);
+      const result = inspectionToResult(inspection, VEHICLE.id);
       setInspectionResult(result as InspectionResult);
-      setInspectionId(inspectionId);
+      setInspectionId(inspId);
       setStep("results");
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "Submission failed.");
@@ -55,8 +61,7 @@ export default function InspectPage() {
   };
 
   const handleNewInspection = () => {
-    setStep("select");
-    setSelectedMachine(null);
+    setStep("start");
     setInspectionResult(null);
     setInspectionId(null);
     setErrorMessage(null);
@@ -64,27 +69,26 @@ export default function InspectPage() {
 
   return (
     <div className="min-h-screen">
-      {step === "select" && (
-        <MachineSelection machines={machines} onSelect={handleMachineSelect} />
-      )}
+      {step === "start" && <StartInspection onStart={handleStart} />}
 
-      {step === "capture" && selectedMachine && (
+      {step === "capture" && (
         <InspectionCapture
-          machine={selectedMachine}
+          vehicleName={VEHICLE.name}
+          vehicleId={VEHICLE.id}
           onComplete={handleCaptureComplete}
-          onBack={() => setStep("select")}
+          onBack={() => setStep("start")}
         />
       )}
 
-      {step === "processing" && <ProcessingScreen machine={selectedMachine} />}
+      {step === "processing" && <ProcessingScreen />}
 
       {step === "error" && (
         <ErrorScreen message={errorMessage || "Something went wrong."} onRetry={handleNewInspection} />
       )}
 
-      {step === "results" && selectedMachine && inspectionResult && (
+      {step === "results" && inspectionResult && (
         <InspectionResults
-          machine={selectedMachine}
+          machine={MACHINE_FOR_RESULTS}
           result={inspectionResult}
           onNewInspection={handleNewInspection}
           inspectionId={inspectionId ?? undefined}
@@ -94,7 +98,7 @@ export default function InspectPage() {
   );
 }
 
-function ProcessingScreen({ machine }: { machine: Machine | null }) {
+function ProcessingScreen() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-cat-gray">
       <div className="text-center">
@@ -103,8 +107,8 @@ function ProcessingScreen({ machine }: { machine: Machine | null }) {
             <polygon points="30,0 60,52 0,52" fill="#FFCD11" />
           </svg>
         </div>
-        <h2 className="text-2xl font-black text-cat-black mb-2">Analyzing Inspection</h2>
-        <p className="text-muted-foreground mb-8">{machine?.name || "Machine"}</p>
+        <h2 className="text-2xl font-black text-cat-black mb-2">Analyzing inspection</h2>
+        <p className="text-muted-foreground mb-8">{VEHICLE.name}</p>
         <div className="w-64 h-2 bg-white rounded overflow-hidden mx-auto">
           <div className="h-full w-0 bg-cat-yellow rounded animate-progress-bar" />
         </div>
@@ -119,14 +123,10 @@ function ErrorScreen({ message, onRetry }: { message: string; onRetry: () => voi
       <div className="max-w-md text-center">
         <div className="mb-4 p-4 bg-red-100 text-red-800 rounded font-medium">{message}</div>
         <p className="text-sm text-muted-foreground mb-6">
-          Make sure the backend is running at <code className="bg-white px-1 rounded">http://localhost:8000</code> and
-          CORS is enabled.
+          Make sure the backend is running and CORS is enabled.
         </p>
-        <button
-          onClick={onRetry}
-          className="py-3 px-6 bg-cat-yellow text-cat-black font-bold rounded"
-        >
-          Start Over
+        <button onClick={onRetry} className="py-3 px-6 bg-cat-yellow text-cat-black font-bold rounded">
+          Start over
         </button>
       </div>
     </div>
