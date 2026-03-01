@@ -1,0 +1,170 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* CAT Ready Color System */
+    --cat-yellow: 45 100% 53%; /* #FFCD11 */
+    --cat-black: 0 0% 7%; /* #0B0B0B - near black */
+    --cat-red: 357 76% 49%; /* #DE1F26 */
+    --cat-white: 0 0% 100%; /* #FFFFFF */
+    --cat-gray: 40 7% 95%; /* #F5F5F3 - warm gray */
+    --cat-gray-dark: 40 5% 90%; /* #E8E6E3 - darker warm gray */
+    --cat-cream: 40 20% 95%; /* #F4F2EE - pastel off-white */
+
+    /* Semantic tokens */
+    --background: 40 20% 95%; /* #F4F2EE - pastel cream */
+    --foreground: 0 0% 7%; /* #0B0B0B */
+
+    --card: 40 7% 95%;
+    --card-foreground: 0 0% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+
+    --primary: 45 100% 53%; /* CAT Yellow */
+    --primary-foreground: 0 0% 10%; /* Black text on yellow */
+
+    --secondary: 40 7% 95%;
+    --secondary-foreground: 0 0% 10%;
+
+    --muted: 40 7% 95%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 45 100% 53%;
+    --accent-foreground: 0 0% 10%;
+
+    --destructive: 357 76% 49%; /* CAT Red */
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 45 100% 53%; /* CAT Yellow for MONITOR */
+    --warning-foreground: 0 0% 10%;
+
+    --border: 40 5% 85%;
+    --input: 40 5% 85%;
+    --ring: 45 100% 53%;
+
+    --radius: 0.25rem; /* 4px - sharp, industrial */
+  }
+
+  /* Dark section variant */
+  .dark-section {
+    --background: 0 0% 10%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 15%;
+    --card-foreground: 0 0% 100%;
+    --muted-foreground: 0 0% 65%;
+    --border: 0 0% 20%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Industrial typography */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading font-black tracking-tight;
+  }
+}
+
+@layer components {
+  /* Status badges */
+  .status-pass {
+    @apply bg-green-500 text-white;
+  }
+
+  .status-monitor {
+    @apply bg-cat-yellow text-cat-black;
+  }
+
+  .status-fail {
+    @apply bg-cat-red text-white;
+  }
+
+  /* Industrial button - pill style */
+  .btn-primary {
+    @apply bg-cat-yellow text-cat-black font-bold px-8 py-4 rounded-full transition-all hover:brightness-95 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98];
+  }
+
+  .btn-secondary {
+    @apply bg-cat-black text-white font-bold px-8 py-4 rounded-full transition-all hover:bg-opacity-90 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98];
+  }
+
+  /* Faded background numbers */
+  .faded-number {
+    @apply text-[12rem] md:text-[16rem] font-black text-cat-black/5 select-none leading-none;
+  }
+
+  /* Dark section faded number */
+  .dark-section .faded-number {
+    @apply text-white/5;
+  }
+}
+
+/* Processing screen progress bar */
+@keyframes progress-bar {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+.animate-progress-bar {
+  animation: progress-bar 2.5s ease-in-out forwards;
+}
+
+@layer utilities {
+  /* CAT Brand Colors as utilities */
+  .bg-cat-yellow {
+    background-color: hsl(var(--cat-yellow));
+  }
+
+  .bg-cat-black {
+    background-color: hsl(var(--cat-black));
+  }
+
+  .bg-cat-red {
+    background-color: hsl(var(--cat-red));
+  }
+
+  .bg-cat-gray {
+    background-color: hsl(var(--cat-gray));
+  }
+
+  .text-cat-yellow {
+    color: hsl(var(--cat-yellow));
+  }
+
+  .text-cat-black {
+    color: hsl(var(--cat-black));
+  }
+
+  .text-cat-red {
+    color: hsl(var(--cat-red));
+  }
+
+  .border-cat-yellow {
+    border-color: hsl(var(--cat-yellow));
+  }
+
+  .border-cat-black {
+    border-color: hsl(var(--cat-black));
+  }
+
+  .bg-cat-cream {
+    background-color: hsl(var(--cat-cream));
+  }
+}
